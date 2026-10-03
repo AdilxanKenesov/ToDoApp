@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -33,6 +32,10 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material.icons.rounded.Add
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.graphics.Color
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -57,7 +60,6 @@ import uz.relay.todoapp.presenter.listdetail.ListDetailContract.Intent
 import uz.relay.todoapp.presenter.lists.ListEditorSheet
 import uz.relay.todoapp.ui.components.EmptyState
 import uz.relay.todoapp.ui.components.ListBadge
-import uz.relay.todoapp.ui.components.QuickAddBar
 import uz.relay.todoapp.ui.components.SwipeTaskRow
 import uz.relay.todoapp.ui.theme.TickTheme
 
@@ -181,7 +183,7 @@ internal fun ListDetailScreenContent(
                     item(key = "empty") {
                         EmptyState(
                             title = "Nothing here yet",
-                            subtitle = "Add the first task below",
+                            subtitle = "Tap + to add the first task",
                             icon = Icons.Rounded.Inbox,
                             modifier = Modifier.fillMaxWidth().padding(top = 56.dp)
                         )
@@ -189,15 +191,18 @@ internal fun ListDetailScreenContent(
                 }
             }
 
-            QuickAddBar(
-                placeholder = "Add to ${list?.name ?: "list"}…",
-                onSubmit = { onEventDispatcher(Intent.QuickAdd(it)) },
+            FloatingActionButton(
+                onClick = { onEventDispatcher(Intent.NewTask) },
+                containerColor = TickTheme.colors.coral,
+                contentColor = Color.White,
+                shape = CircleShape,
                 modifier = Modifier
-                    .align(Alignment.BottomCenter)
+                    .align(Alignment.BottomEnd)
                     .navigationBarsPadding()
-                    .imePadding()
-                    .padding(horizontal = 14.dp, vertical = 12.dp)
-            )
+                    .padding(20.dp)
+            ) {
+                Icon(Icons.Rounded.Add, contentDescription = "Add task")
+            }
         }
     }
 

@@ -5,13 +5,14 @@ import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
-    entities = [TaskListEntity::class, TaskEntity::class, SubtaskEntity::class],
-    version = 1,
+    entities = [TaskListEntity::class, TaskEntity::class, SubtaskEntity::class, CompletionEntity::class],
+    version = 2,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun taskDao(): TaskDao
     abstract fun listDao(): ListDao
+    abstract fun completionDao(): CompletionDao
 
     /** First launch gets two lists so quick add always has somewhere to go. */
     object Seed : Callback() {

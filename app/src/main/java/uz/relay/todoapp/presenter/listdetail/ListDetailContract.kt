@@ -16,7 +16,7 @@ interface ListDetailContract {
         data class Delete(val id: Long) : Intent
         data object Undo : Intent
         data class OpenTask(val id: Long) : Intent
-        data class QuickAdd(val text: String) : Intent
+        data object NewTask : Intent
         data class SaveList(val list: TaskList) : Intent
         data object DeleteList : Intent
         data object Back : Intent

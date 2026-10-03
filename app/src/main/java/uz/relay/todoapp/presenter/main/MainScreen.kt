@@ -24,7 +24,7 @@ import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabNavigator
 import uz.relay.todoapp.presenter.lists.ListsScreen
-import uz.relay.todoapp.presenter.settings.SettingsScreen
+import uz.relay.todoapp.presenter.stats.StatsScreen
 import uz.relay.todoapp.presenter.today.TodayScreen
 import uz.relay.todoapp.presenter.upcoming.UpcomingScreen
 import uz.relay.todoapp.ui.components.LocalSnackbarHostState
@@ -60,7 +60,7 @@ class MainScreen : Screen {
 @Composable
 private fun TickNavigationBar() {
     NavigationBar(containerColor = MaterialTheme.colorScheme.surfaceContainer, tonalElevation = 0.dp) {
-        listOf(TodayScreen, UpcomingScreen, ListsScreen, SettingsScreen).forEach { tab -> TabItem(tab) }
+        listOf(TodayScreen, UpcomingScreen, ListsScreen, StatsScreen).forEach { tab -> TabItem(tab) }
     }
 }
 

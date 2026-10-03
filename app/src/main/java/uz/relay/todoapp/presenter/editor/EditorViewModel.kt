@@ -86,8 +86,7 @@ class EditorViewModel @Inject constructor(
                 lists = lists,
                 listId = intent.listId ?: lists.firstOrNull()?.id ?: 0,
                 dueDate = intent.date,
-                alarm = settings.alarmByDefault,
-                defaultTime = settings.defaultTime
+                alarm = settings.alarmByDefault
             )
         }
 

@@ -15,7 +15,7 @@ class GetUpcomingUseCaseImpl @Inject constructor(
 
     override fun invoke(): Flow<List<Task>> =
         combine(taskRepository.observeTasks(), systemRepository.observeToday()) { tasks, today ->
-            tasks.filter { !it.done && it.dueDate != null && it.dueDate >= today }
+            tasks.filter { !it.done && it.dueDate != null && it.dueDate > today }
                 .sortedWith(compareBy<Task>({ it.dueDate }, { it.dueTime == null }, { it.dueTime }, { -it.priority.ordinal }))
         }
 }

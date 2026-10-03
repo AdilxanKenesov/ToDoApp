@@ -52,7 +52,6 @@ interface EditorContract {
         val alarm: Boolean = true,
         val repeat: RepeatRule = RepeatRule.NONE,
         val subtasks: List<Subtask> = emptyList(),
-        val defaultTime: LocalTime = LocalTime.of(9, 0),
         val titleError: Boolean = false
     ) {
         val isNew: Boolean get() = id == 0L

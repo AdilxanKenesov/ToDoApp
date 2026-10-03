@@ -11,7 +11,6 @@ import uz.relay.todoapp.domain.usecase.DeleteTaskUseCase
 import uz.relay.todoapp.domain.usecase.GetListTasksUseCase
 import uz.relay.todoapp.domain.usecase.GetListUseCase
 import uz.relay.todoapp.domain.usecase.ObserveTodayDateUseCase
-import uz.relay.todoapp.domain.usecase.QuickAddUseCase
 import uz.relay.todoapp.domain.usecase.RestoreTaskUseCase
 import uz.relay.todoapp.domain.usecase.SaveListUseCase
 import uz.relay.todoapp.domain.usecase.ToggleTaskUseCase
@@ -30,7 +29,6 @@ class ListDetailViewModel @Inject constructor(
     private val toggleTaskUseCase: ToggleTaskUseCase,
     private val deleteTaskUseCase: DeleteTaskUseCase,
     private val restoreTaskUseCase: RestoreTaskUseCase,
-    private val quickAddUseCase: QuickAddUseCase,
     private val saveListUseCase: SaveListUseCase,
     private val deleteListUseCase: DeleteListUseCase
 ) : ViewModel(), ListDetailContract.ViewModel {
@@ -64,11 +62,9 @@ class ListDetailViewModel @Inject constructor(
                 }
             }
             is Intent.OpenTask -> intent { directions.openTask(intent.id) }
-            is Intent.QuickAdd -> intent {
+            Intent.NewTask -> intent {
                 val listId = state.listId ?: return@intent
-                quickAddUseCase(intent.text, listId = listId).collect { result ->
-                    result.onFailure { postSideEffect(SideEffect.ShowMessage(it.userMessage())) }
-                }
+                directions.newTask(listId)
             }
             is Intent.SaveList -> intent {
                 saveListUseCase(intent.list).collect { result ->

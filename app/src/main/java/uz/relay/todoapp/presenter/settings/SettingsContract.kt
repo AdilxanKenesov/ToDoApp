@@ -2,8 +2,6 @@ package uz.relay.todoapp.presenter.settings
 
 import org.orbitmvi.orbit.OrbitContainerHost
 import uz.relay.todoapp.domain.model.Settings
-import uz.relay.todoapp.domain.model.ThemeMode
-import java.time.LocalTime
 
 interface SettingsContract {
     interface ViewModel : OrbitContainerHost<UiSettingsState, UiSettingsState, SideEffect> {
@@ -11,10 +9,9 @@ interface SettingsContract {
     }
 
     sealed interface Intent {
-        data class SetTheme(val mode: ThemeMode) : Intent
-        data class SetDefaultTime(val time: LocalTime) : Intent
         data class SetAlarmByDefault(val enabled: Boolean) : Intent
         data class SetVibration(val enabled: Boolean) : Intent
+        data object Back : Intent
     }
 
     sealed interface SideEffect
@@ -23,4 +20,8 @@ interface SettingsContract {
         val settings: Settings = Settings(),
         val exactAlarmsAllowed: Boolean = true
     )
+
+    interface Directions {
+        suspend fun back()
+    }
 }

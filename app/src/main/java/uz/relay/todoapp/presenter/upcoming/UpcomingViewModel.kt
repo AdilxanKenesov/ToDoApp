@@ -9,7 +9,6 @@ import uz.relay.todoapp.domain.model.Task
 import uz.relay.todoapp.domain.usecase.DeleteTaskUseCase
 import uz.relay.todoapp.domain.usecase.GetUpcomingUseCase
 import uz.relay.todoapp.domain.usecase.ObserveTodayDateUseCase
-import uz.relay.todoapp.domain.usecase.QuickAddUseCase
 import uz.relay.todoapp.domain.usecase.RestoreTaskUseCase
 import uz.relay.todoapp.domain.usecase.ToggleTaskUseCase
 import uz.relay.todoapp.presenter.upcoming.UpcomingContract.Intent
@@ -25,8 +24,7 @@ class UpcomingViewModel @Inject constructor(
     private val observeTodayDateUseCase: ObserveTodayDateUseCase,
     private val toggleTaskUseCase: ToggleTaskUseCase,
     private val deleteTaskUseCase: DeleteTaskUseCase,
-    private val restoreTaskUseCase: RestoreTaskUseCase,
-    private val quickAddUseCase: QuickAddUseCase
+    private val restoreTaskUseCase: RestoreTaskUseCase
 ) : ViewModel(), UpcomingContract.ViewModel {
 
     private var lastDeleted: Task? = null
@@ -37,7 +35,8 @@ class UpcomingViewModel @Inject constructor(
                 combine(getUpcomingUseCase(), observeTodayDateUseCase()) { tasks, today -> tasks to today }
                     .collect { (tasks, today) ->
                         reduce {
-                            val selected = if (state.selected < today) today.plusDays(1) else state.selected
+                            // A picked day that has rolled into today is shown on the Today tab now.
+                            val selected = state.selected?.takeIf { it > today }
                             state.copy(
                                 loading = false,
                                 today = today,
@@ -51,7 +50,8 @@ class UpcomingViewModel @Inject constructor(
 
     override fun onEventDispatcher(intent: Intent) {
         when (intent) {
-            is Intent.SelectDate -> intent { reduce { state.copy(selected = intent.date) } }
+            // Tapping the picked day again shows every day.
+            is Intent.SelectDate -> intent { reduce { state.copy(selected = intent.date.takeIf { it != state.selected }) } }
             is Intent.Toggle -> intent {
                 toggleTaskUseCase(intent.id, intent.done).collect { result ->
                     result.onFailure { postSideEffect(SideEffect.ShowMessage(it.userMessage())) }
@@ -72,11 +72,7 @@ class UpcomingViewModel @Inject constructor(
                     result.onFailure { postSideEffect(SideEffect.ShowMessage(it.userMessage())) }
                 }
             }
-            is Intent.QuickAdd -> intent {
-                quickAddUseCase(intent.text, date = state.selected).collect { result ->
-                    result.onFailure { postSideEffect(SideEffect.ShowMessage(it.userMessage())) }
-                }
-            }
+            is Intent.NewTask -> intent { directions.newTask(intent.date) }
             is Intent.OpenTask -> intent { directions.openTask(intent.id) }
         }
     }

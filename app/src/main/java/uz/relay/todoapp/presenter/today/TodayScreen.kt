@@ -1,6 +1,5 @@
 package uz.relay.todoapp.presenter.today
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -28,6 +27,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
+import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.background
+import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
+import uz.relay.todoapp.ui.components.TaskCheckbox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -141,22 +148,12 @@ internal fun TodayScreenContent(
 
             if (state.done.isNotEmpty()) {
                 item(key = "done") {
-                    SectionHeader(
-                        title = "Done",
-                        count = state.done.size,
-                        modifier = Modifier.clickable { onEventDispatcher(Intent.ToggleDoneSection) },
-                        trailing = {
-                            Icon(
-                                imageVector = if (state.doneExpanded) Icons.Rounded.ExpandLess else Icons.Rounded.ExpandMore,
-                                contentDescription = if (state.doneExpanded) "Hide done" else "Show done",
-                                tint = TickTheme.colors.faint,
-                                modifier = Modifier.padding(start = 4.dp).size(18.dp)
-                            )
-                        }
+                    DoneCard(
+                        tasks = state.done,
+                        expanded = state.doneExpanded,
+                        onEventDispatcher = onEventDispatcher,
+                        modifier = Modifier.padding(top = 16.dp).animateItem()
                     )
-                }
-                if (state.doneExpanded) {
-                    items(state.done, key = { "done-${it.id}" }) { task -> Row(task, state.date, onEventDispatcher) }
                 }
             }
         }
@@ -171,6 +168,73 @@ internal fun TodayScreenContent(
                 .imePadding()
                 .padding(horizontal = 14.dp, vertical = 12.dp)
         )
+    }
+}
+
+/** Today's finished tasks, kept apart from the open ones in one quiet, collapsible card. */
+@Composable
+private fun DoneCard(
+    tasks: List<Task>,
+    expanded: Boolean,
+    onEventDispatcher: (Intent) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val colors = TickTheme.colors
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(MaterialTheme.shapes.large)
+            .background(MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.55f))
+            .animateContentSize()
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onEventDispatcher(Intent.ToggleDoneSection) }
+                .padding(horizontal = 16.dp, vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(Icons.Rounded.CheckCircle, contentDescription = null, tint = colors.green, modifier = Modifier.size(20.dp))
+            Text(
+                text = "${tasks.size} done today",
+                style = MaterialTheme.typography.titleSmall,
+                color = colors.muted,
+                modifier = Modifier.weight(1f).padding(start = 10.dp)
+            )
+            Icon(
+                imageVector = if (expanded) Icons.Rounded.ExpandLess else Icons.Rounded.ExpandMore,
+                contentDescription = if (expanded) "Hide done" else "Show done",
+                tint = colors.faint
+            )
+        }
+        if (expanded) {
+            tasks.forEach { task ->
+                HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f), modifier = Modifier.padding(horizontal = 16.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onEventDispatcher(Intent.OpenTask(task.id)) }
+                        .padding(start = 4.dp, end = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    TaskCheckbox(
+                        checked = true,
+                        priority = task.priority,
+                        onToggle = { onEventDispatcher(Intent.Toggle(task.id, false)) },
+                        size = 20.dp
+                    )
+                    Text(
+                        text = task.title,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = colors.faint,
+                        textDecoration = TextDecoration.LineThrough,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            }
+        }
     }
 }
 

@@ -18,7 +18,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CalendarMonth
 import androidx.compose.material.icons.rounded.GridView
-import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material.icons.rounded.Insights
 import androidx.compose.material.icons.rounded.WbSunny
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -39,10 +39,11 @@ import uz.relay.todoapp.domain.model.ListIcon
 import uz.relay.todoapp.domain.model.Priority
 import uz.relay.todoapp.domain.model.RepeatRule
 import uz.relay.todoapp.domain.model.Settings
+import uz.relay.todoapp.domain.model.Stats
+import uz.relay.todoapp.domain.model.DayCount
 import uz.relay.todoapp.domain.model.Subtask
 import uz.relay.todoapp.domain.model.Task
 import uz.relay.todoapp.domain.model.TaskList
-import uz.relay.todoapp.domain.model.ThemeMode
 import uz.relay.todoapp.presenter.editor.EditorContract
 import uz.relay.todoapp.presenter.editor.EditorScreenContent
 import uz.relay.todoapp.presenter.listdetail.ListDetailContract
@@ -52,6 +53,8 @@ import uz.relay.todoapp.presenter.lists.ListsScreenContent
 import uz.relay.todoapp.presenter.onboarding.OnboardingScreenContent
 import uz.relay.todoapp.presenter.settings.SettingsContract
 import uz.relay.todoapp.presenter.settings.SettingsScreenContent
+import uz.relay.todoapp.presenter.stats.StatsContract
+import uz.relay.todoapp.presenter.stats.StatsScreenContent
 import uz.relay.todoapp.presenter.today.TodayContract
 import uz.relay.todoapp.presenter.today.TodayScreenContent
 import uz.relay.todoapp.presenter.upcoming.UpcomingContract
@@ -107,7 +110,7 @@ class ReadmeScreenshots {
 
     @Test fun todayLight() = capture("today_light") { WithBar(0) { TodayScreenContent(todayState) {} } }
 
-    @Test fun todayDark() = capture("today_dark", ThemeMode.DARK) { WithBar(0) { TodayScreenContent(todayState) {} } }
+    @Test fun todayDark() = capture("today_dark", dark = true) { WithBar(0) { TodayScreenContent(todayState.copy(doneExpanded = true)) {} } }
 
     @Test fun upcoming() = capture("upcoming") {
         WithBar(1) {
@@ -115,7 +118,6 @@ class ReadmeScreenshots {
                 UpcomingContract.UiUpcomingState(
                     loading = false,
                     today = today,
-                    selected = today.plusDays(1),
                     groups = listOf(
                         today.plusDays(1) to listOf(
                             task(10, "Train to Samarkand", travel, today.plusDays(1), LocalTime.of(8, 0), Priority.HIGH, reminder = true),
@@ -141,7 +143,7 @@ class ReadmeScreenshots {
         }
     }
 
-    @Test fun listDetail() = capture("list_dark", ThemeMode.DARK) {
+    @Test fun listDetail() = capture("list_dark", dark = true) {
         ListDetailScreenContent(
             state = ListDetailContract.UiListDetailState(
                 listId = 3,
@@ -194,22 +196,39 @@ class ReadmeScreenshots {
         }
     }
 
+    private val statsState = StatsContract.UiStatsState(
+        loading = false,
+        stats = Stats(
+            doneToday = 4,
+            openToday = 4,
+            overdue = 1,
+            doneThisWeek = 19,
+            plannedThisWeek = 26,
+            streakDays = 6,
+            totalDone = 132,
+            last7Days = listOf(3, 5, 2, 0, 6, 4, 4).mapIndexed { index, count -> DayCount(today.minusDays(6L - index), count) },
+            lists = listOf(work, home, shopping, travel)
+        )
+    )
+
+    @Test fun stats() = capture("stats") { WithBar(3) { StatsScreenContent(statsState) {} } }
+
+    @Test fun statsDark() = capture("stats_dark", dark = true) { WithBar(3) { StatsScreenContent(statsState) {} } }
+
     @Test fun settings() = capture("settings") {
-        WithBar(3) {
-            SettingsScreenContent(
-                state = SettingsContract.UiSettingsState(settings = Settings(onboarded = true)),
-                notificationsOn = true,
-                onEventDispatcher = {},
-                onOpenNotifications = {},
-                onOpenExactAlarms = {}
-            )
-        }
+        SettingsScreenContent(
+            state = SettingsContract.UiSettingsState(settings = Settings(onboarded = true)),
+            notificationsOn = true,
+            onEventDispatcher = {},
+            onOpenNotifications = {},
+            onOpenExactAlarms = {}
+        )
     }
 
     /** The real app draws the tabs in MainScreen; this mirrors that bar for still images. */
     @Composable
     private fun WithBar(selected: Int, content: @Composable () -> Unit) {
-        val items = listOf("Today" to Icons.Rounded.WbSunny, "Upcoming" to Icons.Rounded.CalendarMonth, "Lists" to Icons.Rounded.GridView, "Settings" to Icons.Rounded.Settings)
+        val items = listOf("Today" to Icons.Rounded.WbSunny, "Upcoming" to Icons.Rounded.CalendarMonth, "Lists" to Icons.Rounded.GridView, "Stats" to Icons.Rounded.Insights)
         Scaffold(
             containerColor = MaterialTheme.colorScheme.background,
             bottomBar = {
@@ -236,8 +255,8 @@ class ReadmeScreenshots {
         }
     }
 
-    private fun capture(name: String, theme: ThemeMode = ThemeMode.LIGHT, content: @Composable () -> Unit) {
-        composeRule.setContent { TickTheme(themeMode = theme) { Box(Modifier.background(MaterialTheme.colorScheme.background)) { content() } } }
+    private fun capture(name: String, dark: Boolean = false, content: @Composable () -> Unit) {
+        composeRule.setContent { TickTheme(darkTheme = dark) { Box(Modifier.background(MaterialTheme.colorScheme.background)) { content() } } }
         composeRule.onRoot().captureRoboImage("../docs/screenshots/$name.png")
     }
 }

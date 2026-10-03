@@ -15,6 +15,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
+    private val directions: SettingsContract.Directions,
     private val getSettingsUseCase: GetSettingsUseCase,
     private val updateSettingsUseCase: UpdateSettingsUseCase,
     private val observeExactAlarmsUseCase: ObserveExactAlarmsUseCase
@@ -22,7 +23,7 @@ class SettingsViewModel @Inject constructor(
 
     override val container: OrbitContainer<UiSettingsState, UiSettingsState, SideEffect> =
         orbitContainer(UiSettingsState()) {
-            // Re-subscribes each time the tab shows, so a permission granted in system
+            // Re-subscribes each time the screen shows, so a permission granted in system
             // settings is picked up on return.
             repeatOnSubscription {
                 combine(getSettingsUseCase(), observeExactAlarmsUseCase()) { settings, exact -> settings to exact }
@@ -32,10 +33,9 @@ class SettingsViewModel @Inject constructor(
 
     override fun onEventDispatcher(intent: Intent) {
         when (intent) {
-            is Intent.SetTheme -> updateSettingsUseCase { it.copy(themeMode = intent.mode) }
-            is Intent.SetDefaultTime -> updateSettingsUseCase { it.copy(defaultTime = intent.time) }
             is Intent.SetAlarmByDefault -> updateSettingsUseCase { it.copy(alarmByDefault = intent.enabled) }
             is Intent.SetVibration -> updateSettingsUseCase { it.copy(vibration = intent.enabled) }
+            Intent.Back -> intent { directions.back() }
         }
     }
 }

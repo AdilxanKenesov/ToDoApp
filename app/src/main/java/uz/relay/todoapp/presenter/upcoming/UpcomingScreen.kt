@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -22,9 +21,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.CalendarMonth
 import androidx.compose.material.icons.rounded.EventAvailable
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarResult
@@ -50,7 +52,6 @@ import uz.relay.todoapp.domain.model.Task
 import uz.relay.todoapp.presenter.upcoming.UpcomingContract.Intent
 import uz.relay.todoapp.ui.components.EmptyState
 import uz.relay.todoapp.ui.components.LocalSnackbarHostState
-import uz.relay.todoapp.ui.components.QuickAddBar
 import uz.relay.todoapp.ui.components.SectionHeader
 import uz.relay.todoapp.ui.components.SwipeTaskRow
 import uz.relay.todoapp.ui.theme.TickTheme
@@ -98,21 +99,11 @@ internal fun UpcomingScreenContent(
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
 
-    // Index of a day's header in the LazyColumn: 1 for the strip + rows of earlier groups.
-    fun indexOf(date: LocalDate): Int? {
-        var index = 1
-        state.groups.forEach { (day, tasks) ->
-            if (day >= date) return index
-            index += tasks.size + 1
-        }
-        return null
-    }
-
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
             state = listState,
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(start = 18.dp, end = 18.dp, bottom = 96.dp),
+            contentPadding = PaddingValues(start = 18.dp, end = 18.dp, bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             item(key = "header") {
@@ -133,7 +124,7 @@ internal fun UpcomingScreenContent(
                                 busy = day in state.busyDays,
                                 onClick = {
                                     onEventDispatcher(Intent.SelectDate(day))
-                                    indexOf(day)?.let { scope.launch { listState.animateScrollToItem(it) } }
+                                    scope.launch { listState.animateScrollToItem(0) }
                                 }
                             )
                         }
@@ -141,12 +132,26 @@ internal fun UpcomingScreenContent(
                 }
             }
 
-            state.groups.forEach { (date, tasks) ->
+            state.visibleGroups.forEach { (date, tasks) ->
                 item(key = "h-${date.toEpochDay()}") {
                     SectionHeader(
                         title = date.label(state.today),
-                        count = tasks.size,
-                        color = if (date == state.selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground
+                        count = tasks.size.takeIf { it > 0 },
+                        color = if (date == state.selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
+                        modifier = Modifier.animateItem(),
+                        trailing = {
+                            Icon(
+                                imageVector = Icons.Rounded.Add,
+                                contentDescription = "Add task on ${date.label(state.today)}",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier
+                                    .padding(start = 8.dp)
+                                    .clip(CircleShape)
+                                    .clickable { onEventDispatcher(Intent.NewTask(date)) }
+                                    .padding(4.dp)
+                                    .size(20.dp)
+                            )
+                        }
                     )
                 }
                 items(tasks, key = { it.id }) { task ->
@@ -162,28 +167,34 @@ internal fun UpcomingScreenContent(
                 }
             }
 
-            if (!state.loading && state.groups.isEmpty()) {
+            val selected = state.selected
+            val empty = state.visibleGroups.all { it.second.isEmpty() }
+            if (!state.loading && empty) {
                 item(key = "empty") {
-                    EmptyState(
-                        title = "Clear horizon",
-                        subtitle = "Nothing planned yet",
-                        icon = Icons.Rounded.EventAvailable,
-                        modifier = Modifier.fillMaxWidth().padding(top = 64.dp)
-                    )
+                    Column(
+                        modifier = Modifier.fillMaxWidth().padding(top = 48.dp).animateItem(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        EmptyState(
+                            title = if (selected == null) "Clear horizon" else "Free day",
+                            subtitle = if (selected == null) "Nothing planned after today" else "Nothing on ${selected.label(state.today)}",
+                            icon = Icons.Rounded.EventAvailable
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(
+                            onClick = { onEventDispatcher(Intent.NewTask(selected ?: state.today.plusDays(1))) },
+                            shape = MaterialTheme.shapes.medium
+                        ) {
+                            Icon(Icons.Rounded.Add, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(text = "Plan a task", style = MaterialTheme.typography.labelLarge)
+                        }
+                    }
                 }
             }
         }
 
         if (state.loading) CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-
-        QuickAddBar(
-            placeholder = "Add to ${state.selected.label(state.today)}…",
-            onSubmit = { onEventDispatcher(Intent.QuickAdd(it)) },
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .imePadding()
-                .padding(horizontal = 14.dp, vertical = 12.dp)
-        )
     }
 }
 

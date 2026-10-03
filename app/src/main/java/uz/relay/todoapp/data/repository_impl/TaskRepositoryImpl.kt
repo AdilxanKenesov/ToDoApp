@@ -5,10 +5,12 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
+import uz.relay.todoapp.data.local.room.CompletionDao
 import uz.relay.todoapp.data.local.room.TaskDao
 import uz.relay.todoapp.data.local.room.subtaskEntities
 import uz.relay.todoapp.data.local.room.toDomain
 import uz.relay.todoapp.data.local.room.toEntity
+import uz.relay.todoapp.domain.model.Completion
 import uz.relay.todoapp.domain.model.Task
 import uz.relay.todoapp.domain.model.TaskDraft
 import uz.relay.todoapp.domain.repository.TaskRepository
@@ -19,6 +21,7 @@ import javax.inject.Singleton
 @Singleton
 class TaskRepositoryImpl @Inject constructor(
     private val dao: TaskDao,
+    private val completionDao: CompletionDao,
     private val widgetUpdater: WidgetUpdater
 ) : TaskRepository {
 
@@ -59,6 +62,15 @@ class TaskRepositoryImpl @Inject constructor(
     override suspend fun setSubtaskDone(subtaskId: Long, done: Boolean) = write { dao.setSubtaskDone(subtaskId, done) }
 
     override suspend fun markRung(id: Long, at: Long) = withContext(Dispatchers.IO) { dao.markRung(id, at) }
+
+    override fun observeCompletions(): Flow<List<Completion>> =
+        completionDao.observeAll().map { rows -> rows.map { it.toDomain() } }.flowOn(Dispatchers.IO)
+
+    override suspend fun addCompletion(completion: Completion) =
+        withContext(Dispatchers.IO) { completionDao.insert(completion.toEntity()) }
+
+    override suspend fun removeLatestCompletion(taskId: Long) =
+        withContext(Dispatchers.IO) { completionDao.deleteLatest(taskId) }
 
     // Every change also refreshes the home-screen widget.
     private suspend fun <T> write(block: suspend () -> T): T = withContext(Dispatchers.IO) {

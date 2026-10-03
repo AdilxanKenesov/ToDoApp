@@ -12,6 +12,7 @@ import uz.relay.todoapp.domain.usecase.GetListsUseCase
 import uz.relay.todoapp.domain.usecase.GetSettingsUseCase
 import uz.relay.todoapp.domain.usecase.GetTaskUseCase
 import uz.relay.todoapp.domain.usecase.GetTodayUseCase
+import uz.relay.todoapp.domain.usecase.GetStatsUseCase
 import uz.relay.todoapp.domain.usecase.GetUpcomingUseCase
 import uz.relay.todoapp.domain.usecase.ObserveExactAlarmsUseCase
 import uz.relay.todoapp.domain.usecase.ObserveTodayDateUseCase
@@ -31,6 +32,7 @@ import uz.relay.todoapp.domain.usecase.impl.GetListsUseCaseImpl
 import uz.relay.todoapp.domain.usecase.impl.GetSettingsUseCaseImpl
 import uz.relay.todoapp.domain.usecase.impl.GetTaskUseCaseImpl
 import uz.relay.todoapp.domain.usecase.impl.GetTodayUseCaseImpl
+import uz.relay.todoapp.domain.usecase.impl.GetStatsUseCaseImpl
 import uz.relay.todoapp.domain.usecase.impl.GetUpcomingUseCaseImpl
 import uz.relay.todoapp.domain.usecase.impl.ObserveExactAlarmsUseCaseImpl
 import uz.relay.todoapp.domain.usecase.impl.ObserveTodayDateUseCaseImpl
@@ -73,6 +75,9 @@ interface UseCaseModule {
 
     @Binds
     fun bindGetUpcomingUseCase(impl: GetUpcomingUseCaseImpl): GetUpcomingUseCase
+
+    @Binds
+    fun bindGetStatsUseCase(impl: GetStatsUseCaseImpl): GetStatsUseCase
 
     @Binds
     fun bindObserveExactAlarmsUseCase(impl: ObserveExactAlarmsUseCaseImpl): ObserveExactAlarmsUseCase

@@ -8,25 +8,20 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.bottomSheet.BottomSheetNavigator
 import cafe.adriel.voyager.transitions.SlideTransition
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import uz.relay.todoapp.domain.model.ThemeMode
-import uz.relay.todoapp.domain.usecase.GetSettingsUseCase
 import uz.relay.todoapp.navigation.AppNavHost
 import uz.relay.todoapp.navigation.AppNavigationHandler
 import uz.relay.todoapp.navigation.AppNavigator
@@ -44,11 +39,10 @@ class MainActivity : ComponentActivity() {
 
     @Inject lateinit var navigationHandler: AppNavigationHandler
     @Inject lateinit var appNavigator: AppNavigator
-    @Inject lateinit var getSettingsUseCase: GetSettingsUseCase
     @Inject lateinit var deepLink: NotificationDeepLink
 
-    private val themeMode by lazy { getSettingsUseCase().map { it.themeMode }.distinctUntilChanged() }
-
+    // Voyager's bottom sheet is built on Material 2's experimental ModalBottomSheetLayout.
+    @OptIn(ExperimentalMaterialApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
@@ -60,9 +54,7 @@ class MainActivity : ComponentActivity() {
 
         enableEdgeToEdge()
         setContent {
-            val theme by themeMode.collectAsStateWithLifecycle(ThemeMode.SYSTEM)
-
-            TickTheme(themeMode = theme) {
+            TickTheme {
                 BottomSheetNavigator(
                     sheetShape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
                     sheetBackgroundColor = MaterialTheme.colorScheme.surfaceContainer,

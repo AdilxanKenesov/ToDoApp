@@ -1,5 +1,6 @@
 package uz.relay.todoapp.data.local.room
 
+import uz.relay.todoapp.domain.model.Completion
 import uz.relay.todoapp.domain.model.ListIcon
 import uz.relay.todoapp.domain.model.Priority
 import uz.relay.todoapp.domain.model.RepeatRule
@@ -71,3 +72,17 @@ fun TaskDraft.subtaskEntities(): List<SubtaskEntity> =
 
 fun TaskListWithCounts.toDomain(): TaskList =
     TaskList(id = id, name = name, color = color, icon = ListIcon.from(icon), taskCount = taskCount, doneCount = doneCount)
+
+fun CompletionEntity.toDomain(): Completion = Completion(
+    taskId = taskId,
+    listId = listId,
+    completedAt = completedAt,
+    date = LocalDate.ofEpochDay(date)
+)
+
+fun Completion.toEntity(): CompletionEntity = CompletionEntity(
+    taskId = taskId,
+    listId = listId,
+    completedAt = completedAt,
+    date = date.toEpochDay()
+)

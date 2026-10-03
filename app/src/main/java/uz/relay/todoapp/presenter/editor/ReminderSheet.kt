@@ -46,6 +46,7 @@ import androidx.compose.ui.unit.dp
 import uz.relay.todoapp.domain.model.RepeatRule
 import uz.relay.todoapp.ui.components.TickChip
 import uz.relay.todoapp.ui.theme.TickTheme
+import uz.relay.todoapp.utils.DEFAULT_REMINDER_TIME
 import uz.relay.todoapp.utils.atTimeMillis
 import uz.relay.todoapp.utils.reminderLabel
 import uz.relay.todoapp.utils.toLocalDateTime
@@ -67,7 +68,6 @@ fun ReminderSheet(
     initialAlarm: Boolean,
     dueDate: LocalDate?,
     dueTime: LocalTime?,
-    defaultTime: LocalTime,
     onDismiss: () -> Unit,
     onSave: (at: Long?, repeat: RepeatRule, alarm: Boolean) -> Unit
 ) {
@@ -81,8 +81,9 @@ fun ReminderSheet(
         add(Preset("In 1 hour", now + TimeUnit.HOURS.toMillis(1)))
         val evening = today.atTimeMillis(LocalTime.of(18, 0))
         if (evening > now + TimeUnit.MINUTES.toMillis(15)) add(Preset("This evening", evening))
-        add(Preset("Tomorrow", today.plusDays(1).atTimeMillis(defaultTime)))
-        add(Preset("Next week", today.with(TemporalAdjusters.next(DayOfWeek.MONDAY)).atTimeMillis(defaultTime)))
+        val time = dueTime ?: DEFAULT_REMINDER_TIME
+        add(Preset("Tomorrow", today.plusDays(1).atTimeMillis(time)))
+        add(Preset("Next week", today.with(TemporalAdjusters.next(DayOfWeek.MONDAY)).atTimeMillis(time)))
     }.take(4)
 
     var at by rememberSaveable { mutableStateOf(initialAt) }
@@ -183,7 +184,7 @@ fun ReminderSheet(
     }
     pickedDate?.let { date ->
         TickTimePicker(
-            initial = at?.toLocalDateTime()?.toLocalTime() ?: dueTime ?: defaultTime,
+            initial = at?.toLocalDateTime()?.toLocalTime() ?: dueTime ?: DEFAULT_REMINDER_TIME,
             onDismiss = { pickedDate = null },
             onPick = { time ->
                 pickedDate = null

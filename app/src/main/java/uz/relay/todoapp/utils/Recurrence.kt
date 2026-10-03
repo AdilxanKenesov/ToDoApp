@@ -5,9 +5,13 @@ import uz.relay.todoapp.domain.model.Task
 import java.time.DayOfWeek
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
+
+/** Clock time for reminder presets such as "Tomorrow" when the task has no due time. */
+val DEFAULT_REMINDER_TIME: LocalTime = LocalTime.of(9, 0)
 
 /** The next date after [from] for this rule; null for one-time tasks. */
 fun RepeatRule.nextDate(from: LocalDate): LocalDate? = when (this) {

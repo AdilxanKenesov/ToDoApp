@@ -1,6 +1,7 @@
 package uz.relay.todoapp.domain.repository
 
 import kotlinx.coroutines.flow.Flow
+import uz.relay.todoapp.domain.model.Completion
 import uz.relay.todoapp.domain.model.Task
 import uz.relay.todoapp.domain.model.TaskDraft
 
@@ -21,4 +22,8 @@ interface TaskRepository {
     suspend fun restore(task: Task)
     suspend fun setSubtaskDone(subtaskId: Long, done: Boolean)
     suspend fun markRung(id: Long, at: Long)
+
+    fun observeCompletions(): Flow<List<Completion>>
+    suspend fun addCompletion(completion: Completion)
+    suspend fun removeLatestCompletion(taskId: Long)
 }

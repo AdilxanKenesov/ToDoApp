@@ -16,11 +16,11 @@ Works fully offline, with no account.
 
 | Today | Today · dark | Upcoming |
 |:---:|:---:|:---:|
-| <img src="docs/screenshots/today_light.png" width="240" alt="Today screen"> | <img src="docs/screenshots/today_dark.png" width="240" alt="Today screen in dark mode"> | <img src="docs/screenshots/upcoming.png" width="240" alt="Upcoming week"> |
-| **Task editor** | **Lists** | **List · dark** |
-| <img src="docs/screenshots/editor.png" width="240" alt="Task editor sheet"> | <img src="docs/screenshots/lists.png" width="240" alt="Lists grid"> | <img src="docs/screenshots/list_dark.png" width="240" alt="A list in dark mode"> |
-| **Settings** | **Welcome** | |
-| <img src="docs/screenshots/settings.png" width="240" alt="Settings"> | <img src="docs/screenshots/onboarding.png" width="240" alt="Welcome screen"> | |
+| <img src="docs/screenshots/today_light.png" width="240" alt="Today screen"> | <img src="docs/screenshots/today_dark.png" width="240" alt="Today screen in dark mode"> | <img src="docs/screenshots/upcoming.png" width="240" alt="Upcoming days"> |
+| **Stats** | **Stats · dark** | **Task editor** |
+| <img src="docs/screenshots/stats.png" width="240" alt="Stats"> | <img src="docs/screenshots/stats_dark.png" width="240" alt="Stats in dark mode"> | <img src="docs/screenshots/editor.png" width="240" alt="Task editor sheet"> |
+| **Lists** | **List · dark** | **Settings** |
+| <img src="docs/screenshots/lists.png" width="240" alt="Lists grid"> | <img src="docs/screenshots/list_dark.png" width="240" alt="A list in dark mode"> | <img src="docs/screenshots/settings.png" width="240" alt="Settings"> |
 
 ## Features
 
@@ -28,9 +28,17 @@ Works fully offline, with no account.
   - a progress ring
   - Overdue / Today / Done sections
   - the date rolls over by itself at midnight
-- **Upcoming**: a two-week strip and tasks grouped by day.
-- **Lists**: colors, icons and progress for each list.
-- **Quick add**: type `Call mom tomorrow 18:00 !high #Home` and press Enter. Date, time, priority, list and the reminder are filled in for you.
+- **Upcoming**: the next two weeks, starting tomorrow.
+  - Tap a day in the strip to see only that day; tap it again to see all days.
+  - `+` on a day plans a task for that date.
+- **Lists**: colors, icons and progress for each list; `+` adds a task to the list.
+- **Quick add** (on Today): type `Call mom tomorrow 18:00 !high #Home` and press Enter. Date, time, priority, list and the reminder are filled in for you.
+- **Stats**:
+  - this week's progress ring
+  - done today, left today, overdue and your day streak
+  - a chart of the last 7 days
+  - progress for each list
+  - every check-off is logged, so repeating tasks count each time
 - **Task details**:
   - notes and subtasks
   - due date and time
@@ -40,6 +48,7 @@ Works fully offline, with no account.
   - **Ring like an alarm**: alarm sound that keeps ringing until you react, and the alarm icon in the status bar.
   - **Quiet reminder**: a normal notification.
   - Both have **Done** and **Snooze 10 min** buttons in the notification.
+  - **Settings → Loud alarm** picks which of the two new reminders use. **Exact alarms** is the Android permission that lets them ring at the exact minute.
 - **Repeat**: once, daily, weekdays, weekly or monthly.
   - Completing a repeating task moves it to its next date.
   - Its alarm keeps ringing on schedule.
@@ -47,7 +56,7 @@ Works fully offline, with no account.
 - **Swipe**: right to complete, left to delete, with **Undo**.
 - **Search** across titles and notes.
 - **Home-screen widget**: today's tasks, tap to complete, `+` to add.
-- **Theme**: System, Light or Dark.
+- **Theme**: follows the system light or dark mode.
 
 ## Download
 
@@ -65,7 +74,7 @@ On Android 12+ allow **Alarms & reminders** when the app asks, so alarms ring at
 | Navigation | [Voyager](https://voyager.adriel.cafe): screens, tabs, bottom sheet; a `Channel`-based navigator |
 | DI | Hilt (+ hilt-work) |
 | Async | Coroutines, `Flow`, `callbackFlow` |
-| Storage | Room (tasks, subtasks, lists), SharedPreferences (settings) |
+| Storage | Room (tasks, subtasks, lists, completion log), SharedPreferences (settings) |
 | Alarms | `AlarmManager` (`setAlarmClock` / exact alarms), BroadcastReceivers, notifications |
 | Background | WorkManager (reschedule after boot or clock change) |
 | Widget | Jetpack Glance |
@@ -91,7 +100,7 @@ Every screen has the same four parts:
 | `XScreen` | Collects state and side effects; draws a stateless `XScreenContent` |
 
 `callbackFlow` wraps three Android callbacks:
-- the settings listener (theme switches live)
+- the settings listener
 - a `BroadcastReceiver` for time tick, date, clock and time zone changes, so "Today" stays correct
 - the exact-alarm permission broadcast
 
@@ -111,7 +120,7 @@ app/src/main/java/uz/relay/todoapp
 ├── di/             Hilt modules
 ├── domain/         models, repository interfaces, use cases (+ impl/)
 ├── navigation/     AppNavigator, dispatcher, deep links
-├── presenter/      splash, onboarding, main (tabs), today, upcoming, lists, listdetail, search, editor, settings
+├── presenter/      splash, onboarding, main (tabs), today, upcoming, lists, listdetail, stats, search, editor, settings
 ├── ui/             theme and shared components
 ├── utils/          recurrence, quick-add parser, date labels
 └── widget/         Glance "Today" widget
@@ -157,7 +166,7 @@ They are rendered from the real Compose screens with demo data (Roborazzi + Robo
 | Permission | Why |
 |---|---|
 | `POST_NOTIFICATIONS` | Show reminders (Android 13+) |
-| `SCHEDULE_EXACT_ALARM` | Ring at the exact minute (Android 12+, asked when you set the first reminder) |
+| `SCHEDULE_EXACT_ALARM` | Ring at the exact minute (Android 12+, asked when you set the first reminder). Without it Android may delay reminders by a few minutes. |
 | `RECEIVE_BOOT_COMPLETED` | Put alarms back after a restart |
 | `VIBRATE` | Vibrate when a reminder rings (can be turned off) |
 

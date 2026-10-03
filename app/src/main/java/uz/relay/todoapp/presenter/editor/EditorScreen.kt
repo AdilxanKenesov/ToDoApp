@@ -90,6 +90,7 @@ import uz.relay.todoapp.ui.components.TickChip
 import uz.relay.todoapp.ui.theme.TickTheme
 import uz.relay.todoapp.utils.label
 import uz.relay.todoapp.utils.reminderLabel
+import uz.relay.todoapp.utils.DEFAULT_REMINDER_TIME
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalTime
@@ -401,7 +402,7 @@ internal fun EditorScreenContent(
     }
     if (pickTime) {
         TickTimePicker(
-            initial = state.dueTime ?: state.defaultTime,
+            initial = state.dueTime ?: DEFAULT_REMINDER_TIME,
             onDismiss = { pickTime = false },
             onPick = { pickTime = false; onEventDispatcher(Intent.SetTime(it)) },
             onClear = if (state.dueTime != null) ({ pickTime = false; onEventDispatcher(Intent.SetTime(null)) }) else null
@@ -414,7 +415,6 @@ internal fun EditorScreenContent(
             initialAlarm = state.alarm,
             dueDate = state.dueDate,
             dueTime = state.dueTime,
-            defaultTime = state.defaultTime,
             onDismiss = { reminderSheet = false },
             onSave = { at, repeat, alarm ->
                 reminderSheet = false

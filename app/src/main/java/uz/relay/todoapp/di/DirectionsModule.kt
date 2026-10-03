@@ -14,7 +14,11 @@ import uz.relay.todoapp.presenter.onboarding.OnboardingContract
 import uz.relay.todoapp.presenter.onboarding.OnboardingDirections
 import uz.relay.todoapp.presenter.search.SearchContract
 import uz.relay.todoapp.presenter.search.SearchDirections
+import uz.relay.todoapp.presenter.settings.SettingsContract
+import uz.relay.todoapp.presenter.settings.SettingsDirections
 import uz.relay.todoapp.presenter.splash.SplashContract
+import uz.relay.todoapp.presenter.stats.StatsContract
+import uz.relay.todoapp.presenter.stats.StatsDirections
 import uz.relay.todoapp.presenter.splash.SplashDirections
 import uz.relay.todoapp.presenter.today.TodayContract
 import uz.relay.todoapp.presenter.today.TodayDirections
@@ -57,4 +61,12 @@ interface DirectionsModule {
     @Singleton
     @Binds
     fun bindEditorDirections(impl: EditorDirections): EditorContract.Directions
+
+    @Singleton
+    @Binds
+    fun bindSettingsDirections(impl: SettingsDirections): SettingsContract.Directions
+
+    @Singleton
+    @Binds
+    fun bindStatsDirections(impl: StatsDirections): StatsContract.Directions
 }

@@ -15,7 +15,6 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
-import uz.relay.todoapp.domain.model.ThemeMode
 
 private val LightColorScheme = lightColorScheme(
     primary = LightPalette.Primary,
@@ -91,14 +90,9 @@ private val TickShapes = Shapes(
 
 @Composable
 fun TickTheme(
-    themeMode: ThemeMode = ThemeMode.SYSTEM,
+    darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
-    val darkTheme = when (themeMode) {
-        ThemeMode.SYSTEM -> isSystemInDarkTheme()
-        ThemeMode.LIGHT -> false
-        ThemeMode.DARK -> true
-    }
 
     val view = LocalView.current
     if (!view.isInEditMode) {
