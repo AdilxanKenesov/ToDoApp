@@ -3,6 +3,7 @@ package uz.relay.todoapp.ui.theme
 import android.app.Activity
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Shapes
 import androidx.compose.material3.darkColorScheme
@@ -114,9 +115,11 @@ fun TickTheme(
         MaterialTheme(
             colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme,
             typography = Typography,
-            shapes = TickShapes,
-            content = content
-        )
+            shapes = TickShapes
+        ) {
+            // There is no root Surface, so text would default to black on the dark background.
+            CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onBackground, content = content)
+        }
     }
 }
 
