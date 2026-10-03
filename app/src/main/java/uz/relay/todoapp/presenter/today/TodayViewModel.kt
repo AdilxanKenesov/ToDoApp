@@ -7,14 +7,12 @@ import org.orbitmvi.orbit.viewmodel.orbitContainer
 import uz.relay.todoapp.domain.model.Task
 import uz.relay.todoapp.domain.usecase.DeleteTaskUseCase
 import uz.relay.todoapp.domain.usecase.GetTodayUseCase
-import uz.relay.todoapp.domain.usecase.QuickAddUseCase
 import uz.relay.todoapp.domain.usecase.RestoreTaskUseCase
 import uz.relay.todoapp.domain.usecase.ToggleTaskUseCase
 import uz.relay.todoapp.presenter.today.TodayContract.Intent
 import uz.relay.todoapp.presenter.today.TodayContract.SideEffect
 import uz.relay.todoapp.presenter.today.TodayContract.UiTodayState
 import uz.relay.todoapp.utils.userMessage
-import java.time.LocalDate
 import javax.inject.Inject
 
 @HiltViewModel
@@ -23,8 +21,7 @@ class TodayViewModel @Inject constructor(
     private val getTodayUseCase: GetTodayUseCase,
     private val toggleTaskUseCase: ToggleTaskUseCase,
     private val deleteTaskUseCase: DeleteTaskUseCase,
-    private val restoreTaskUseCase: RestoreTaskUseCase,
-    private val quickAddUseCase: QuickAddUseCase
+    private val restoreTaskUseCase: RestoreTaskUseCase
 ) : ViewModel(), TodayContract.ViewModel {
 
     private var lastDeleted: Task? = null
@@ -63,11 +60,7 @@ class TodayViewModel @Inject constructor(
                     result.onFailure { postSideEffect(SideEffect.ShowMessage(it.userMessage())) }
                 }
             }
-            is Intent.QuickAdd -> intent {
-                quickAddUseCase(intent.text, date = LocalDate.now()).collect { result ->
-                    result.onFailure { postSideEffect(SideEffect.ShowMessage(it.userMessage())) }
-                }
-            }
+            Intent.NewTask -> intent { directions.newTask(state.date) }
             is Intent.OpenTask -> intent { directions.openTask(intent.id) }
             Intent.OpenSearch -> intent { directions.openSearch() }
             Intent.ToggleDoneSection -> intent { reduce { state.copy(doneExpanded = !state.doneExpanded) } }

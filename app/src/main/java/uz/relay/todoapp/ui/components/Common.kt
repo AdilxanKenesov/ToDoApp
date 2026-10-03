@@ -17,12 +17,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.List
-import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.Flight
@@ -39,25 +35,18 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import uz.relay.todoapp.domain.model.ListIcon
@@ -89,59 +78,6 @@ fun ListBadge(icon: ListIcon, color: Color, modifier: Modifier = Modifier, size:
         contentAlignment = Alignment.Center
     ) {
         Icon(imageVector = icon.vector(), contentDescription = null, tint = Color.White, modifier = Modifier.size(size * 0.5f))
-    }
-}
-
-/** Pill input that adds a task on Enter and keeps the keyboard up for the next one. */
-@Composable
-fun QuickAddBar(
-    placeholder: String,
-    onSubmit: (String) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    var text by rememberSaveable { mutableStateOf("") }
-    fun submit() {
-        if (text.isNotBlank()) {
-            onSubmit(text)
-            text = ""
-        }
-    }
-
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(54.dp)
-            .shadow(18.dp, CircleShape, ambientColor = Color(0x664338CA), spotColor = Color(0x664338CA))
-            .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.surfaceContainer)
-            .padding(start = 20.dp, end = 7.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Box(modifier = Modifier.weight(1f)) {
-            if (text.isEmpty()) {
-                Text(text = placeholder, style = MaterialTheme.typography.bodyMedium, color = TickTheme.colors.faint, maxLines = 1)
-            }
-            BasicTextField(
-                value = text,
-                onValueChange = { text = it },
-                singleLine = true,
-                textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface),
-                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
-                keyboardActions = KeyboardActions(onDone = { submit() }),
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
-        Box(
-            modifier = Modifier
-                .size(42.dp)
-                .clip(CircleShape)
-                .background(TickTheme.colors.coral)
-                .clickable { submit() },
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(imageVector = Icons.Rounded.Add, contentDescription = "Add task", tint = Color.White)
-        }
     }
 }
 

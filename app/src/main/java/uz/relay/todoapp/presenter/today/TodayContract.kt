@@ -14,7 +14,7 @@ interface TodayContract {
         data class Delete(val id: Long) : Intent
         data object Undo : Intent
         data class OpenTask(val id: Long) : Intent
-        data class QuickAdd(val text: String) : Intent
+        data object NewTask : Intent
         data object OpenSearch : Intent
         data object ToggleDoneSection : Intent
     }
@@ -39,5 +39,6 @@ interface TodayContract {
     interface Directions {
         suspend fun openTask(id: Long)
         suspend fun openSearch()
+        suspend fun newTask(date: LocalDate)
     }
 }

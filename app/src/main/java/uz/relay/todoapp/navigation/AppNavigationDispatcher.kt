@@ -22,8 +22,4 @@ object AppNavigationDispatcher : AppNavigator, AppNavigationHandler {
     override suspend fun replaceAll(screen: Screen) = navigate { navigator.replaceAll(screen) }
 
     override suspend fun back() = navigate { navigator.pop() }
-
-    override suspend fun openSheet(screen: Screen) = navigate { sheet.show(screen) }
-
-    override suspend fun closeSheet() = navigate { sheet.hide() }
 }

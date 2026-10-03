@@ -16,7 +16,6 @@ import uz.relay.todoapp.domain.usecase.GetStatsUseCase
 import uz.relay.todoapp.domain.usecase.GetUpcomingUseCase
 import uz.relay.todoapp.domain.usecase.ObserveExactAlarmsUseCase
 import uz.relay.todoapp.domain.usecase.ObserveTodayDateUseCase
-import uz.relay.todoapp.domain.usecase.QuickAddUseCase
 import uz.relay.todoapp.domain.usecase.RestoreTaskUseCase
 import uz.relay.todoapp.domain.usecase.SaveListUseCase
 import uz.relay.todoapp.domain.usecase.SaveTaskUseCase
@@ -36,7 +35,6 @@ import uz.relay.todoapp.domain.usecase.impl.GetStatsUseCaseImpl
 import uz.relay.todoapp.domain.usecase.impl.GetUpcomingUseCaseImpl
 import uz.relay.todoapp.domain.usecase.impl.ObserveExactAlarmsUseCaseImpl
 import uz.relay.todoapp.domain.usecase.impl.ObserveTodayDateUseCaseImpl
-import uz.relay.todoapp.domain.usecase.impl.QuickAddUseCaseImpl
 import uz.relay.todoapp.domain.usecase.impl.RestoreTaskUseCaseImpl
 import uz.relay.todoapp.domain.usecase.impl.SaveListUseCaseImpl
 import uz.relay.todoapp.domain.usecase.impl.SaveTaskUseCaseImpl
@@ -84,9 +82,6 @@ interface UseCaseModule {
 
     @Binds
     fun bindObserveTodayDateUseCase(impl: ObserveTodayDateUseCaseImpl): ObserveTodayDateUseCase
-
-    @Binds
-    fun bindQuickAddUseCase(impl: QuickAddUseCaseImpl): QuickAddUseCase
 
     @Binds
     fun bindRestoreTaskUseCase(impl: RestoreTaskUseCaseImpl): RestoreTaskUseCase

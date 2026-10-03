@@ -19,10 +19,10 @@ class SplashDirections @Inject constructor(
     }
 
     override suspend fun openTask(id: Long) {
-        navigator.openSheet(EditorScreen(taskId = id))
+        navigator.navigateTo(EditorScreen(taskId = id))
     }
 
     override suspend fun openNewTask() {
-        navigator.openSheet(EditorScreen())
+        navigator.navigateTo(EditorScreen())
     }
 }

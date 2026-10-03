@@ -13,6 +13,6 @@ class SearchDirections @Inject constructor(
     }
 
     override suspend fun openTask(id: Long) {
-        navigator.openSheet(EditorScreen(taskId = id))
+        navigator.navigateTo(EditorScreen(taskId = id))
     }
 }

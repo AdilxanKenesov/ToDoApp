@@ -73,7 +73,7 @@ class EditorViewModel @Inject constructor(
         }
     }
 
-    // The sheet sends Init on every composition; only the first one loads, so the
+    // The screen sends Init on every composition; only the first one loads, so the
     // typed text survives rotation.
     private fun init(intent: Intent.Init) = intent {
         if (state.initialized) return@intent

@@ -14,7 +14,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun listDao(): ListDao
     abstract fun completionDao(): CompletionDao
 
-    /** First launch gets two lists so quick add always has somewhere to go. */
+    /** First launch gets two lists so a new task always has somewhere to go. */
     object Seed : Callback() {
         override fun onCreate(db: SupportSQLiteDatabase) {
             val now = System.currentTimeMillis()

@@ -7,16 +7,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import cafe.adriel.voyager.navigator.Navigator
-import cafe.adriel.voyager.navigator.bottomSheet.BottomSheetNavigator
 import cafe.adriel.voyager.transitions.SlideTransition
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
@@ -41,8 +35,6 @@ class MainActivity : ComponentActivity() {
     @Inject lateinit var appNavigator: AppNavigator
     @Inject lateinit var deepLink: NotificationDeepLink
 
-    // Voyager's bottom sheet is built on Material 2's experimental ModalBottomSheetLayout.
-    @OptIn(ExperimentalMaterialApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
@@ -55,19 +47,12 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             TickTheme {
-                BottomSheetNavigator(
-                    sheetShape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
-                    sheetBackgroundColor = MaterialTheme.colorScheme.surfaceContainer,
-                    sheetContentColor = MaterialTheme.colorScheme.onSurface,
-                    scrimColor = Color(0x7314142B)
-                ) { sheet ->
-                    Navigator(screen = SplashScreen()) { navigator ->
-                        LaunchedEffect(navigator) {
-                            val host = AppNavHost(navigator, sheet)
-                            navigationHandler.backStack.collectLatest { param -> param.invoke(host) }
-                        }
-                        SlideTransition(navigator)
+                Navigator(screen = SplashScreen()) { navigator ->
+                    LaunchedEffect(navigator) {
+                        val host = AppNavHost(navigator)
+                        navigationHandler.backStack.collectLatest { param -> param.invoke(host) }
                     }
+                    SlideTransition(navigator)
                 }
             }
         }
@@ -77,8 +62,8 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         when (val target = intent.target()) {
-            is NotificationDeepLink.Target.OpenTask -> lifecycleScope.launch { appNavigator.openSheet(EditorScreen(taskId = target.id)) }
-            NotificationDeepLink.Target.QuickAdd -> lifecycleScope.launch { appNavigator.openSheet(EditorScreen()) }
+            is NotificationDeepLink.Target.OpenTask -> lifecycleScope.launch { appNavigator.navigateTo(EditorScreen(taskId = target.id)) }
+            NotificationDeepLink.Target.QuickAdd -> lifecycleScope.launch { appNavigator.navigateTo(EditorScreen()) }
             null -> Unit
         }
     }

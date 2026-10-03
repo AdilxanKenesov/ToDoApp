@@ -8,6 +8,6 @@ class EditorDirections @Inject constructor(
 ) : EditorContract.Directions {
 
     override suspend fun close() {
-        navigator.closeSheet()
+        navigator.back()
     }
 }

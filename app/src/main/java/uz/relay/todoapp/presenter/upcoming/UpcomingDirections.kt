@@ -10,10 +10,10 @@ class UpcomingDirections @Inject constructor(
 ) : UpcomingContract.Directions {
 
     override suspend fun openTask(id: Long) {
-        navigator.openSheet(EditorScreen(taskId = id))
+        navigator.navigateTo(EditorScreen(taskId = id))
     }
 
     override suspend fun newTask(date: LocalDate) {
-        navigator.openSheet(EditorScreen(date = date))
+        navigator.navigateTo(EditorScreen(date = date))
     }
 }

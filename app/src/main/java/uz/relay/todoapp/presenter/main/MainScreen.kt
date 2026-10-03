@@ -41,7 +41,7 @@ class MainScreen : Screen {
 
         CompositionLocalProvider(LocalSnackbarHostState provides snackbarHostState) {
             TabNavigator(TodayScreen) {
-                // While typing in a quick add bar the keyboard takes the bar's place.
+                // While the keyboard is up it takes the bar's place.
                 val imeVisible = WindowInsets.isImeVisible
                 Scaffold(
                     snackbarHost = { SnackbarHost(snackbarHostState, modifier = Modifier.padding(bottom = 64.dp)) },

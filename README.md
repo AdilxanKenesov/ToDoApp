@@ -18,7 +18,7 @@ Works fully offline, with no account.
 |:---:|:---:|:---:|
 | <img src="docs/screenshots/today_light.png" width="240" alt="Today screen"> | <img src="docs/screenshots/today_dark.png" width="240" alt="Today screen in dark mode"> | <img src="docs/screenshots/upcoming.png" width="240" alt="Upcoming days"> |
 | **Stats** | **Stats · dark** | **Task editor** |
-| <img src="docs/screenshots/stats.png" width="240" alt="Stats"> | <img src="docs/screenshots/stats_dark.png" width="240" alt="Stats in dark mode"> | <img src="docs/screenshots/editor.png" width="240" alt="Task editor sheet"> |
+| <img src="docs/screenshots/stats.png" width="240" alt="Stats"> | <img src="docs/screenshots/stats_dark.png" width="240" alt="Stats in dark mode"> | <img src="docs/screenshots/editor.png" width="240" alt="Task editor"> |
 | **Lists** | **List · dark** | **Settings** |
 | <img src="docs/screenshots/lists.png" width="240" alt="Lists grid"> | <img src="docs/screenshots/list_dark.png" width="240" alt="A list in dark mode"> | <img src="docs/screenshots/settings.png" width="240" alt="Settings"> |
 
@@ -32,7 +32,7 @@ Works fully offline, with no account.
   - Tap a day in the strip to see only that day; tap it again to see all days.
   - `+` on a day plans a task for that date.
 - **Lists**: colors, icons and progress for each list; `+` adds a task to the list.
-- **Quick add** (on Today): type `Call mom tomorrow 18:00 !high #Home` and press Enter. Date, time, priority, list and the reminder are filled in for you.
+- **Add a task**: the `+` button on Today opens a full-screen task editor with today already set.
 - **Stats**:
   - this week's progress ring
   - done today, left today, overdue and your day streak
@@ -71,7 +71,7 @@ On Android 12+ allow **Alarms & reminders** when the app asks, so alarms ring at
 |---|---|
 | UI | Jetpack Compose, Material 3, Sora & Manrope fonts |
 | Architecture | MVI with [Orbit 12](https://orbit-mvi.org) (`OrbitContainerHost`), clean layers |
-| Navigation | [Voyager](https://voyager.adriel.cafe): screens, tabs, bottom sheet; a `Channel`-based navigator |
+| Navigation | [Voyager](https://voyager.adriel.cafe): screens and tabs; a `Channel`-based navigator |
 | DI | Hilt (+ hilt-work) |
 | Async | Coroutines, `Flow`, `callbackFlow` |
 | Storage | Room (tasks, subtasks, lists, completion log), SharedPreferences (settings) |
@@ -122,7 +122,7 @@ app/src/main/java/uz/relay/todoapp
 ├── navigation/     AppNavigator, dispatcher, deep links
 ├── presenter/      splash, onboarding, main (tabs), today, upcoming, lists, listdetail, stats, search, editor, settings
 ├── ui/             theme and shared components
-├── utils/          recurrence, quick-add parser, date labels
+├── utils/          recurrence, date labels
 └── widget/         Glance "Today" widget
 ```
 

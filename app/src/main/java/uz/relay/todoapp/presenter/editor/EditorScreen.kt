@@ -53,6 +53,11 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -96,14 +101,14 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.temporal.TemporalAdjusters
 
-/** Shown in the app's bottom sheet. taskId == 0 creates a task. */
+/** Full-screen task editor. taskId == 0 creates a task. */
 data class EditorScreen(
     private val taskId: Long = 0,
     private val listId: Long? = null,
     private val date: LocalDate? = null
 ) : Screen {
 
-    // A fresh key per sheet, so opening the editor twice never reuses an old ViewModel.
+    // A fresh key per open, so opening the editor twice never reuses an old ViewModel.
     override val key: ScreenKey = uniqueScreenKey
 
     @Composable
@@ -118,7 +123,6 @@ data class EditorScreen(
 
         viewModel.collectSideEffect { sideEffect ->
             when (sideEffect) {
-                // The sheet sits above the snackbar host, so a toast is the visible option here.
                 is EditorContract.SideEffect.ShowMessage -> Toast.makeText(context, sideEffect.message, Toast.LENGTH_SHORT).show()
                 EditorContract.SideEffect.CheckAlarmPermissions -> {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
@@ -181,202 +185,219 @@ internal fun EditorScreenContent(
 
     Column(
         modifier = Modifier
-            .fillMaxWidth()
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .statusBarsPadding()
             .navigationBarsPadding()
             .imePadding()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 20.dp)
-            .padding(top = 10.dp, bottom = 16.dp)
     ) {
-        Box(
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-                .size(width = 38.dp, height = 4.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.outline)
-        )
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(start = 18.dp, end = 10.dp, top = 8.dp, bottom = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            FilledIconButton(
+                onClick = { onEventDispatcher(Intent.Close) },
+                colors = IconButtonDefaults.filledIconButtonColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                    contentColor = MaterialTheme.colorScheme.onSurface
+                ),
+                shape = MaterialTheme.shapes.small
+            ) {
+                Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Back")
+            }
             Text(
                 text = if (state.isNew) "New task" else "Edit task",
-                style = MaterialTheme.typography.labelSmall,
-                color = colors.muted,
-                modifier = Modifier.weight(1f)
+                style = MaterialTheme.typography.headlineSmall,
+                modifier = Modifier.weight(1f).padding(start = 12.dp)
             )
             if (!state.isNew) {
                 IconButton(onClick = { onEventDispatcher(Intent.Delete) }) {
                     Icon(Icons.Rounded.DeleteOutline, contentDescription = "Delete task", tint = colors.coral)
                 }
             }
-            IconButton(onClick = { onEventDispatcher(Intent.Close) }) {
-                Icon(Icons.Rounded.Close, contentDescription = "Close", tint = colors.muted)
-            }
         }
 
         if (state.loading) {
-            Box(modifier = Modifier.fillMaxWidth().height(220.dp), contentAlignment = Alignment.Center) {
+            Box(modifier = Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
             }
             return@Column
         }
 
-        Box {
-            if (state.title.isEmpty()) {
-                Text(
-                    text = "What needs doing?",
-                    style = MaterialTheme.typography.titleLarge,
-                    color = if (state.titleError) colors.coral else colors.faint
-                )
-            }
-            BasicTextField(
-                value = state.title,
-                onValueChange = { onEventDispatcher(Intent.ChangeTitle(it)) },
-                textStyle = MaterialTheme.typography.titleLarge.copy(color = MaterialTheme.colorScheme.onSurface),
-                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Next),
-                modifier = Modifier.fillMaxWidth().focusRequester(titleFocus)
-            )
-        }
-        Spacer(modifier = Modifier.height(6.dp))
-        Box {
-            if (state.notes.isEmpty()) Text("Notes", style = MaterialTheme.typography.bodyMedium, color = colors.faint)
-            BasicTextField(
-                value = state.notes,
-                onValueChange = { onEventDispatcher(Intent.ChangeNotes(it)) },
-                textStyle = MaterialTheme.typography.bodyMedium.copy(color = colors.muted),
-                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
-                modifier = Modifier.fillMaxWidth().heightIn(min = 22.dp)
-            )
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Box {
-                TickChip(
-                    text = state.dueDate?.label(today) ?: "Date",
-                    icon = Icons.Rounded.CalendarToday,
-                    selected = state.dueDate != null,
-                    onClick = { dateMenu = true }
-                )
-                DropdownMenu(expanded = dateMenu, onDismissRequest = { dateMenu = false }) {
-                    listOf(
-                        "Today" to today,
-                        "Tomorrow" to today.plusDays(1),
-                        "Next week" to today.with(TemporalAdjusters.next(DayOfWeek.MONDAY))
-                    ).forEach { (name, value) ->
-                        DropdownMenuItem(text = { Text(name) }, onClick = { dateMenu = false; onEventDispatcher(Intent.SetDate(value)) })
-                    }
-                    DropdownMenuItem(text = { Text("Pick a date…") }, onClick = { dateMenu = false; pickDate = true })
-                    if (state.dueDate != null) {
-                        DropdownMenuItem(text = { Text("No date", color = colors.coral) }, onClick = { dateMenu = false; onEventDispatcher(Intent.SetDate(null)) })
-                    }
-                }
-            }
-
-            TickChip(
-                text = state.dueTime?.label() ?: "Time",
-                icon = Icons.Rounded.Schedule,
-                selected = state.dueTime != null,
-                onClick = { pickTime = true }
-            )
-
-            TickChip(
-                text = state.reminderAt?.reminderLabel(today) ?: "Remind",
-                icon = if (state.alarm) Icons.Rounded.Alarm else Icons.Rounded.NotificationsNone,
-                accent = if (state.reminderAt != null) colors.coral else null,
-                onClick = { reminderSheet = true }
-            )
-
-            if (state.repeat != RepeatRule.NONE) {
-                TickChip(text = state.repeat.title, icon = Icons.Rounded.Repeat, onClick = { reminderSheet = true })
-            }
-
-            Box {
-                TickChip(
-                    text = if (state.priority == Priority.NONE) "Priority" else state.priority.title,
-                    icon = Icons.Rounded.Flag,
-                    accent = if (state.priority == Priority.NONE) null else colors.priorityColor(state.priority),
-                    onClick = { priorityMenu = true }
-                )
-                DropdownMenu(expanded = priorityMenu, onDismissRequest = { priorityMenu = false }) {
-                    Priority.entries.reversed().forEach { priority ->
-                        DropdownMenuItem(
-                            text = { Text(priority.title) },
-                            leadingIcon = { Icon(Icons.Rounded.Flag, contentDescription = null, tint = colors.priorityColor(priority)) },
-                            trailingIcon = if (priority == state.priority) ({ Icon(Icons.Rounded.Check, contentDescription = null) }) else null,
-                            onClick = { priorityMenu = false; onEventDispatcher(Intent.SetPriority(priority)) }
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 18.dp)
+                .padding(top = 8.dp, bottom = 16.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(MaterialTheme.shapes.large)
+                    .background(MaterialTheme.colorScheme.surfaceContainer)
+                    .padding(16.dp)
+            ) {
+                Box {
+                    if (state.title.isEmpty()) {
+                        Text(
+                            text = "What needs doing?",
+                            style = MaterialTheme.typography.titleLarge,
+                            color = if (state.titleError) colors.coral else colors.faint
                         )
                     }
+                    BasicTextField(
+                        value = state.title,
+                        onValueChange = { onEventDispatcher(Intent.ChangeTitle(it)) },
+                        textStyle = MaterialTheme.typography.titleLarge.copy(color = MaterialTheme.colorScheme.onSurface),
+                        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Next),
+                        modifier = Modifier.fillMaxWidth().focusRequester(titleFocus)
+                    )
+                }
+                Spacer(modifier = Modifier.height(6.dp))
+                Box {
+                    if (state.notes.isEmpty()) Text("Notes", style = MaterialTheme.typography.bodyMedium, color = colors.faint)
+                    BasicTextField(
+                        value = state.notes,
+                        onValueChange = { onEventDispatcher(Intent.ChangeNotes(it)) },
+                        textStyle = MaterialTheme.typography.bodyMedium.copy(color = colors.muted),
+                        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 22.dp)
+                    )
                 }
             }
 
-            Box {
-                Row(
-                    modifier = Modifier
-                        .height(34.dp)
-                        .clip(MaterialTheme.shapes.small)
-                        .background(MaterialTheme.colorScheme.surfaceContainerHighest)
-                        .clickable { listMenu = true }
-                        .padding(horizontal = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    ListTag(name = state.list?.name ?: "List", color = colors.listColor(state.list?.color ?: 0))
+            Spacer(modifier = Modifier.height(16.dp))
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Box {
+                    TickChip(
+                        text = state.dueDate?.label(today) ?: "Date",
+                        icon = Icons.Rounded.CalendarToday,
+                        selected = state.dueDate != null,
+                        onClick = { dateMenu = true }
+                    )
+                    DropdownMenu(expanded = dateMenu, onDismissRequest = { dateMenu = false }) {
+                        listOf(
+                            "Today" to today,
+                            "Tomorrow" to today.plusDays(1),
+                            "Next week" to today.with(TemporalAdjusters.next(DayOfWeek.MONDAY))
+                        ).forEach { (name, value) ->
+                            DropdownMenuItem(text = { Text(name) }, onClick = { dateMenu = false; onEventDispatcher(Intent.SetDate(value)) })
+                        }
+                        DropdownMenuItem(text = { Text("Pick a date…") }, onClick = { dateMenu = false; pickDate = true })
+                        if (state.dueDate != null) {
+                            DropdownMenuItem(text = { Text("No date", color = colors.coral) }, onClick = { dateMenu = false; onEventDispatcher(Intent.SetDate(null)) })
+                        }
+                    }
                 }
-                DropdownMenu(expanded = listMenu, onDismissRequest = { listMenu = false }) {
-                    state.lists.forEach { list ->
-                        DropdownMenuItem(
-                            text = { ListTag(name = list.name, color = colors.listColor(list.color)) },
-                            trailingIcon = if (list.id == state.listId) ({ Icon(Icons.Rounded.Check, contentDescription = null) }) else null,
-                            onClick = { listMenu = false; onEventDispatcher(Intent.SetList(list.id)) }
-                        )
+
+                TickChip(
+                    text = state.dueTime?.label() ?: "Time",
+                    icon = Icons.Rounded.Schedule,
+                    selected = state.dueTime != null,
+                    onClick = { pickTime = true }
+                )
+
+                TickChip(
+                    text = state.reminderAt?.reminderLabel(today) ?: "Remind",
+                    icon = if (state.alarm) Icons.Rounded.Alarm else Icons.Rounded.NotificationsNone,
+                    accent = if (state.reminderAt != null) colors.coral else null,
+                    onClick = { reminderSheet = true }
+                )
+
+                if (state.repeat != RepeatRule.NONE) {
+                    TickChip(text = state.repeat.title, icon = Icons.Rounded.Repeat, onClick = { reminderSheet = true })
+                }
+
+                Box {
+                    TickChip(
+                        text = if (state.priority == Priority.NONE) "Priority" else state.priority.title,
+                        icon = Icons.Rounded.Flag,
+                        accent = if (state.priority == Priority.NONE) null else colors.priorityColor(state.priority),
+                        onClick = { priorityMenu = true }
+                    )
+                    DropdownMenu(expanded = priorityMenu, onDismissRequest = { priorityMenu = false }) {
+                        Priority.entries.reversed().forEach { priority ->
+                            DropdownMenuItem(
+                                text = { Text(priority.title) },
+                                leadingIcon = { Icon(Icons.Rounded.Flag, contentDescription = null, tint = colors.priorityColor(priority)) },
+                                trailingIcon = if (priority == state.priority) ({ Icon(Icons.Rounded.Check, contentDescription = null) }) else null,
+                                onClick = { priorityMenu = false; onEventDispatcher(Intent.SetPriority(priority)) }
+                            )
+                        }
+                    }
+                }
+
+                Box {
+                    Row(
+                        modifier = Modifier
+                            .height(34.dp)
+                            .clip(MaterialTheme.shapes.small)
+                            .background(MaterialTheme.colorScheme.surfaceContainerHighest)
+                            .clickable { listMenu = true }
+                            .padding(horizontal = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        ListTag(name = state.list?.name ?: "List", color = colors.listColor(state.list?.color ?: 0))
+                    }
+                    DropdownMenu(expanded = listMenu, onDismissRequest = { listMenu = false }) {
+                        state.lists.forEach { list ->
+                            DropdownMenuItem(
+                                text = { ListTag(name = list.name, color = colors.listColor(list.color)) },
+                                trailingIcon = if (list.id == state.listId) ({ Icon(Icons.Rounded.Check, contentDescription = null) }) else null,
+                                onClick = { listMenu = false; onEventDispatcher(Intent.SetList(list.id)) }
+                            )
+                        }
                     }
                 }
             }
-        }
 
-        Spacer(modifier = Modifier.height(18.dp))
-        Text(
-            text = if (state.subtasks.isEmpty()) "SUBTASKS" else "SUBTASKS · ${state.subtasks.count { it.done }}/${state.subtasks.size}",
-            style = MaterialTheme.typography.labelSmall,
-            color = colors.muted
-        )
-        state.subtasks.forEachIndexed { index, subtask ->
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                TaskCheckbox(checked = subtask.done, priority = Priority.NONE, onToggle = { onEventDispatcher(Intent.ToggleSubtask(index)) }, size = 18.dp)
-                Text(
-                    text = subtask.title,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = if (subtask.done) colors.faint else MaterialTheme.colorScheme.onSurface,
-                    textDecoration = if (subtask.done) TextDecoration.LineThrough else null,
-                    modifier = Modifier.weight(1f)
-                )
-                IconButton(onClick = { onEventDispatcher(Intent.RemoveSubtask(index)) }) {
-                    Icon(Icons.Rounded.Close, contentDescription = "Remove subtask", tint = colors.faint, modifier = Modifier.size(18.dp))
+            Spacer(modifier = Modifier.height(18.dp))
+            Text(
+                text = if (state.subtasks.isEmpty()) "SUBTASKS" else "SUBTASKS · ${state.subtasks.count { it.done }}/${state.subtasks.size}",
+                style = MaterialTheme.typography.labelSmall,
+                color = colors.muted
+            )
+            state.subtasks.forEachIndexed { index, subtask ->
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    TaskCheckbox(checked = subtask.done, priority = Priority.NONE, onToggle = { onEventDispatcher(Intent.ToggleSubtask(index)) }, size = 18.dp)
+                    Text(
+                        text = subtask.title,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = if (subtask.done) colors.faint else MaterialTheme.colorScheme.onSurface,
+                        textDecoration = if (subtask.done) TextDecoration.LineThrough else null,
+                        modifier = Modifier.weight(1f)
+                    )
+                    IconButton(onClick = { onEventDispatcher(Intent.RemoveSubtask(index)) }) {
+                        Icon(Icons.Rounded.Close, contentDescription = "Remove subtask", tint = colors.faint, modifier = Modifier.size(18.dp))
+                    }
                 }
             }
-        }
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 4.dp)) {
-            Icon(Icons.Rounded.Add, contentDescription = null, tint = colors.faint, modifier = Modifier.padding(horizontal = 9.dp).size(18.dp))
-            Spacer(modifier = Modifier.width(4.dp))
-            Box(modifier = Modifier.weight(1f)) {
-                if (newSubtask.isEmpty()) Text("Add subtask", style = MaterialTheme.typography.bodyMedium, color = colors.faint)
-                BasicTextField(
-                    value = newSubtask,
-                    onValueChange = { newSubtask = it },
-                    singleLine = true,
-                    textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface),
-                    cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
-                    keyboardActions = KeyboardActions(onDone = {
-                        onEventDispatcher(Intent.AddSubtask(newSubtask))
-                        newSubtask = ""
-                    }),
-                    modifier = Modifier.fillMaxWidth()
-                )
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 4.dp)) {
+                Icon(Icons.Rounded.Add, contentDescription = null, tint = colors.faint, modifier = Modifier.padding(horizontal = 9.dp).size(18.dp))
+                Spacer(modifier = Modifier.width(4.dp))
+                Box(modifier = Modifier.weight(1f)) {
+                    if (newSubtask.isEmpty()) Text("Add subtask", style = MaterialTheme.typography.bodyMedium, color = colors.faint)
+                    BasicTextField(
+                        value = newSubtask,
+                        onValueChange = { newSubtask = it },
+                        singleLine = true,
+                        textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface),
+                        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions(onDone = {
+                            onEventDispatcher(Intent.AddSubtask(newSubtask))
+                            newSubtask = ""
+                        }),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
             }
+
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
         Button(
             onClick = {
                 if (newSubtask.isNotBlank()) {
@@ -387,9 +408,9 @@ internal fun EditorScreenContent(
             },
             enabled = !state.saving,
             shape = MaterialTheme.shapes.medium,
-            modifier = Modifier.fillMaxWidth().height(52.dp)
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 12.dp).height(52.dp)
         ) {
-            Text(text = "Save", style = MaterialTheme.typography.labelLarge)
+            Text(text = if (state.isNew) "Add task" else "Save", style = MaterialTheme.typography.labelLarge)
         }
     }
 

@@ -165,35 +165,23 @@ class ReadmeScreenshots {
     }
 
     @Test fun editor() = capture("editor") {
-        Box(modifier = Modifier.fillMaxSize()) {
-            WithBar(0) { TodayScreenContent(todayState) {} }
-            Box(modifier = Modifier.fillMaxSize().background(Color(0x7314142B)))
-            Box(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp))
-                    .background(MaterialTheme.colorScheme.surfaceContainer)
-            ) {
-                EditorScreenContent(
-                    state = EditorContract.UiEditorState(
-                        initialized = true,
-                        id = 3,
-                        title = "Gym — legs",
-                        notes = "Squats, lunges, stretch after",
-                        lists = listOf(work, home, health),
-                        listId = 5,
-                        priority = Priority.MEDIUM,
-                        dueDate = today,
-                        dueTime = LocalTime.of(18, 30),
-                        reminderAt = today.atTime(18, 15).atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli(),
-                        repeat = RepeatRule.WEEKDAYS,
-                        subtasks = listOf(Subtask(1, "Warm up", true), Subtask(2, "4 × 10 squats"), Subtask(3, "Stretch"))
-                    ),
-                    onEventDispatcher = {}
-                )
-            }
-        }
+        EditorScreenContent(
+            state = EditorContract.UiEditorState(
+                initialized = true,
+                id = 3,
+                title = "Gym — legs",
+                notes = "Squats, lunges, stretch after",
+                lists = listOf(work, home, health),
+                listId = 5,
+                priority = Priority.MEDIUM,
+                dueDate = today,
+                dueTime = LocalTime.of(18, 30),
+                reminderAt = today.atTime(18, 15).atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli(),
+                repeat = RepeatRule.WEEKDAYS,
+                subtasks = listOf(Subtask(1, "Warm up", true), Subtask(2, "4 × 10 squats"), Subtask(3, "Stretch"))
+            ),
+            onEventDispatcher = {}
+        )
     }
 
     private val statsState = StatsContract.UiStatsState(

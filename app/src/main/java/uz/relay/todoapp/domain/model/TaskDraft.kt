@@ -3,7 +3,7 @@ package uz.relay.todoapp.domain.model
 import java.time.LocalDate
 import java.time.LocalTime
 
-/** What the editor or quick add hands to SaveTaskUseCase. id == 0 creates a new task. */
+/** What the editor hands to SaveTaskUseCase. id == 0 creates a new task. */
 data class TaskDraft(
     val id: Long = 0,
     val title: String,

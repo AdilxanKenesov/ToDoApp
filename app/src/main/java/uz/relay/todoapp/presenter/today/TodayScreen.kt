@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -35,6 +34,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import uz.relay.todoapp.ui.components.TaskCheckbox
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material.icons.rounded.Add
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.graphics.Color
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -55,7 +58,6 @@ import uz.relay.todoapp.presenter.today.TodayContract.Intent
 import uz.relay.todoapp.ui.components.EmptyState
 import uz.relay.todoapp.ui.components.HeroCard
 import uz.relay.todoapp.ui.components.LocalSnackbarHostState
-import uz.relay.todoapp.ui.components.QuickAddBar
 import uz.relay.todoapp.ui.components.SectionHeader
 import uz.relay.todoapp.ui.components.SwipeTaskRow
 import uz.relay.todoapp.ui.theme.TickTheme
@@ -140,7 +142,7 @@ internal fun TodayScreenContent(
                 item(key = "empty") {
                     EmptyState(
                         title = if (state.done.isEmpty()) "Fresh start" else "All done",
-                        subtitle = if (state.done.isEmpty()) "Add a task below" else "${state.done.size} completed today",
+                        subtitle = if (state.done.isEmpty()) "Tap + to plan your day" else "${state.done.size} completed today",
                         modifier = Modifier.fillMaxWidth().padding(top = 56.dp, bottom = 24.dp).animateItem()
                     )
                 }
@@ -160,14 +162,17 @@ internal fun TodayScreenContent(
 
         if (state.loading) CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
 
-        QuickAddBar(
-            placeholder = "Add a task…",
-            onSubmit = { onEventDispatcher(Intent.QuickAdd(it)) },
+        FloatingActionButton(
+            onClick = { onEventDispatcher(Intent.NewTask) },
+            containerColor = TickTheme.colors.coral,
+            contentColor = Color.White,
+            shape = CircleShape,
             modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .imePadding()
-                .padding(horizontal = 14.dp, vertical = 12.dp)
-        )
+                .align(Alignment.BottomEnd)
+                .padding(20.dp)
+        ) {
+            Icon(Icons.Rounded.Add, contentDescription = "Add task")
+        }
     }
 }
 

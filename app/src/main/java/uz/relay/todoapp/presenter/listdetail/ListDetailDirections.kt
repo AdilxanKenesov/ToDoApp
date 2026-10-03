@@ -13,10 +13,10 @@ class ListDetailDirections @Inject constructor(
     }
 
     override suspend fun openTask(id: Long) {
-        navigator.openSheet(EditorScreen(taskId = id))
+        navigator.navigateTo(EditorScreen(taskId = id))
     }
 
     override suspend fun newTask(listId: Long) {
-        navigator.openSheet(EditorScreen(listId = listId))
+        navigator.navigateTo(EditorScreen(listId = listId))
     }
 }
