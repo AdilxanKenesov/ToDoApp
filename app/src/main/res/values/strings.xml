@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">To Do App</string>
+    <string name="app_name">Tick</string>
+    <string name="widget_description">Today\'s tasks with tap-to-complete</string>
 </resources>
